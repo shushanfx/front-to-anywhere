@@ -145,6 +145,16 @@ Cookie: ...
 
 ### URL Encode 与 URL Decode
 
+`key`和`value`都需要进行 URL Encode 编码，URL Encode 是一种编码方式，用于将 URL 中的特殨字符转换为 `%` 加上两位十六进制数，比如`?name=张三&age=18`，经过 URL Encode 编码后，变成：`?name=%E5%BC%A0%E4%B8%89&age=18`。
+
+javascript 中可以使用`encodeURIComponent`将字符串进行 URL Encode 编码。根据 MDN 的介绍
+
+> encodeURIComponent() 函数通过将特定字符的每个实例替换成代表字符的 UTF-8 编码的一个、两个、三个或四个转义序列来编码 URI（只有由两个“代理”字符组成的字符会被编码为四个转义序列）。
+
+而`decodeURIComponent`函数则`encodeURIComponent`的逆操作。
+
+当然这里面说的`UTF-8`编码并不是固定的，也可以使用其他编码，只需要对应的`decodeURIComponent`保持一致即可。
+
 ## 附录 I：域名解析的分类
 
 共同实现 DNS 分布式数据库的所有 DNS 服务器存储了资源记录(Resource Record, RR)，RR 提供了主机名到 IP 地址的映射。每个 DNS 回答报文中会包含一条或多条资源记录。RR 记录用于回复客户端查询。
