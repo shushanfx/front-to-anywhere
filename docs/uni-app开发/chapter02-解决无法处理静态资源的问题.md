@@ -83,6 +83,86 @@ const imgUrl = __webpack_require__('./a.png')
 
 ## 2. 解决方案
 
+描述到上述问题之后，我们如何解决这个问题呢？我们有必要描述一下我们的目标：
+
+* 开发环境，能够将`assets`目录移出`mp-weixin`文件夹，并提供文件服务器，以便于开发时能够访问到资源；
+
+* 生产环境，能够将`assets`目录移出`mp-weixin`文件夹，删除`assets`文件，并将资源放在CDN上，以便于小程序能够访问到资源。
+
+那么具体怎么做呢 ？
+
+仔细研究`webpack`的构建过程，我们发现`webpack`的complier的`hooks`包含了几个特殊的阶段：
+
+* emit：资源输出阶段，这个阶段是在资源输出之前的一个阶段，我们可以在这个阶段对资源进行处理。
+
+* afterEmit：资源输出后阶段，这个阶段是在资源输出之后的一个阶段，我们可以在这个阶段对资源进行处理。
+
+* done：构建完成阶段，这个阶段是在构建完成之后的一个阶段，我们可以在这个阶段对资源进行处理。
+
+> 不涉及的hooks我们就不在赘述了，有兴趣的同学可以查看[webpack官方文档](https://webpack.js.org/api/compiler-hooks/)
+
+从上面的描述我们可以看出，我们可以在`afterEmit`和`done`阶段对资源进行处理，将`assets`目录移出`mp-weixin`文件夹，同时开启一个本地的服务器，以便于开发时能够访问到资源。
+
+### 代码解释
+
+我们新建一个`build`目录，然后在`build`目录下新建一个`webpack-plugin-file.js`文件，用于定义一个webpack plugin：
+
+```javascript
+module.exports = class WebpackPluginFile {
+  constructor(options) {
+    this.options = options;
+  }
+
+  apply(compiler) {
+    this.logger = compiler.getInfrastructureLogger('WebpackPluginFile');
+    compiler.hooks.done.tap('WebpackPluginFile', () => {
+      this.copyAssets(compiler).then(() => {
+        this.startServer(compiler);
+      });
+    });
+  }
+}
+```
+
+接下来我们要实现`copyAssets`。
+
+```javascript
+const fs = require('fs');
+const fsPromise = require('fs/promises');
+const path = require('path');
+
+module.exports = class WebpackPluginFile {
+  async copyAssets(compiler) {
+    const outputPath = compiler.options.output.path;
+    const assetsPath = path.resolve(outputPath, 'assets');
+    const targetPath = path.resolve(outputPath, '..', 'assets');
+    return this.copyDir(assetsPath, targetPath);
+  }
+  async copyDir(src, dist) {
+    const stats = await fsPromise.stat(src).catch(() => null);
+    if (!stats) {
+      // 判断是否存在，如果不存在则返回
+      return null;
+    }
+    if (stats.isFile()) {
+      // 如果是文件，则直接拷贝
+      return this.copyFile(src, dist);
+    }
+    // 如果是目录，则遍历目录
+    if (stats.isDirectory()) {
+      const paths = await fsPromise.readdir(src);
+      for (let i = 0; i < paths.length; i++) {
+        const path = paths[i];
+        await this.copyDir(
+          path.resolve(src, path),
+          path.resolve(dist, path)
+        );
+      }
+    }
+  }
+}
+```
+
 
 
 ## 参考资料
