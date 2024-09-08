@@ -5,10 +5,10 @@
 通过`uni-app`为小程序开发提供了极大的便利。然而，`uni-app`在处理`sourcemap`的问题上并不是很友好，它在测试环境的输出产物类似效果如下：
 
 ```javascript
-// runtime.js
+// mp-weixin/common/runtime.js
 // 此处省略JS代码
 
-// # sourceMappingURL=../.sourcemap/mp-weixin/runtime.js.map
+// # sourceMappingURL=../.sourcemap/mp-weixin/common/runtime.js.map
 ```
 
 看起来输出了`sourcemap`文件以及对应的路径，但是实际上，微信小程序开发工具并不能识别这个`sourcemap`文件，导致我们在调试的时候并不能很好地定位到源码的位置。
