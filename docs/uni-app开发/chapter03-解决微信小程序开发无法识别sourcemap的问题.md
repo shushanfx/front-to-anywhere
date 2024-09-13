@@ -45,3 +45,44 @@ dist
 的URL地址替换为代理服务器的地址。这样，我们就可以在微信小程序开发助手中正常使用`sourcemap`了。
 
 ## 具体实现
+
+首先要将source-map的输出目录设置为`dist/mp-weixin`，之后再将sourcemap的URL地址替换为代理服务器的地址。
+
+要修改sourcemap的输出目录，我们要弄清楚uni-app是如何生成sourcemap的。uni-app使用了`webpack`作为构建工具，而`webpack`使用了`SourceMapDevToolPlugin`来处理sourcemap。通过分析uni-app的源代码，我们发现`uni-app`通过`@dcloud/vue-cli-plugin-uni/lib/source-map.js`文件增加了该插件。
+
+```javascript
+// @dcloud/vue-cli-plugin-uni/lib/source-map.js
+module.exports = {
+  createSourceMapDevToolPlugin (filename = false, args) {
+    const options = {
+      test: [/\.js$/],
+      exclude,
+      moduleFilenameTemplate,
+      ...args
+    }
+    if (filename) {
+      options.filename = '../.sourcemap/' + process.env.UNI_PLATFORM + '/[file].map'
+    }
+    return new webpack.SourceMapDevToolPlugin(options)
+  },
+  createEvalSourceMapDevToolPlugin () {
+    return new webpack.EvalSourceMapDevToolPlugin({
+      test: pathToRegexp(process.env.UNI_INPUT_DIR, { start: true }),
+      exclude,
+      moduleFilenameTemplate
+    })
+  }
+}
+```
+
+我们可以看到，uni-app将sourcemap的输出目录设置为`../.sourcemap/${process.env.UNI_PLATFORM}/[file].map`，其中`process.env.UNI_PLATFORM`为当前平台，如`mp-weixin`、`mp-alipay`等。
+
+那么，如果我们通过`vue.config.js`来覆盖这个配置，是否可以生效呢？
+
+```javascript
+```
+
+```javascript
+// vue.config.js
+
+```
