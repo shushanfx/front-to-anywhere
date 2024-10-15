@@ -80,9 +80,17 @@ module.exports = {
 那么，如果我们通过`vue.config.js`来覆盖这个配置，是否可以生效呢？
 
 ```javascript
-```
-
-```javascript
 // vue.config.js
-
+module.exports = {
+  configureWebpack: {
+    plugins: [
+      new webpack.SourceMapDevToolPlugin({
+        test: /\.js$/,
+        exclude: /node_modules/,
+        moduleFilenameTemplate: '',
+        filename: '/.sourcemap/' + process.env.UNI_PLATFORM + '/[file].map'
+      })
+    ]
+  }
+};
 ```
